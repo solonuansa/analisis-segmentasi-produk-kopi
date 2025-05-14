@@ -1,0 +1,434 @@
+---
+title: "Penerapan K-Means *Clustering* dan PCA untuk Analisis Segmentasi Produk Kopi di Berbagai Wilayah"
+author: "Solo Bening Nuansa Nanditya - M0723084"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: 
+      smooth_scroll: true
+    includes:
+      in_header: function.html
+css: "style.css"
+---
+
+# Pendahuluan
+
+## Latar Belakang
+Persaingan pasar yang semakin ketat serta perubahan perilaku konsumen yang dinamis menuntut perusahaan agar memiliki strategi yang tepat dan berbasis data dalam pengelolaan maupun pemasaran produk. Pemahaman yang mendalam terkait preferensi pelanggan, kinerja produk, dan efisiensi rantai pasok menjadi elemen penting dalam mempertahankan daya saing di tengah lanskap bisnis global. Pendekatan seperti analisis segmentasi terbukti efektif karena memungkinkan perusahaan mengelompokkan pasar atau produk berdasarkan karakteristik tertentu, sehingga proses pengambilan keputusan strategis dapat dilakukan secara lebih terarah dan tepat sasaran.
+
+Segmentasi data, terutama dengan metode *clustering*, telah menjadi cara yang ampuh di berbagai bidang untuk menemukan pola dan hubungan tersembunyi dalam data mentah. Dengan mengelompokkan data yang memiliki karakteristik serupa—seperti data penjualan, biaya operasional, atau letak geografis—perusahaan bisa menyusun strategi pemasaran, distribusi, dan penggunaan sumber daya secara lebih efektif. Pendekatan ini sangat berguna dalam industri makanan dan minuman, di mana selera konsumen sering kali berbeda-beda tergantung wilayah dan budaya. Salah satu contohnya adalah produk kopi, yang merupakan komoditas konsumsi besar di dunia dan memiliki pola penjualan yang dipengaruhi oleh lokasi, karakteristik konsumen, dan cara produk itu dipasarkan.
+
+Fokus penelitian ini adalah pada produk kopi yang dijual di berbagai negara bagian, di mana setiap wilayah memiliki karakteristik pasar yang unik. Perbedaan dalam tingkat penjualan, profitabilitas, biaya operasional, dan preferensi produk mencerminkan kompleksitas dalam mengelola rantai pasok dan strategi pemasaran. Oleh karena itu, analisis *clustering* berbasis kombinasi produk dan lokasi penjualan (negara bagian) menjadi penting untuk mengidentifikasi segmen-segmen yang memiliki pola serupa dalam hal performa finansial dan operasional. Dengan memanfaatkan metrik seperti penjualan, keuntungan, biaya barang terjual (COGS), margin, biaya pemasaran, inventaris, dan total pengeluaran, penelitian ini bertujuan untuk menghasilkan segmentasi yang representatif.
+
+Hasil dari analisis ini diharapkan dapat memberikan wawasan yang *actionable* bagi perusahaan dalam merancang strategi yang lebih tepat sasaran. Misalnya, segmen dengan penjualan tinggi tetapi biaya operasional yang besar dapat menjadi fokus untuk optimalisasi efisiensi, sementara segmen dengan potensi pertumbuhan rendah dapat dievaluasi untuk strategi reposisi atau penyesuaian produk. Dengan demikian, analisis ini tidak hanya berkontribusi pada peningkatan profitabilitas, tetapi juga pada penguatan posisi kompetitif perusahaan di pasar kopi yang sangat dinamis.
+
+# Metode
+
+## Analisis *Cluster*
+Analisis *cluster* adalah teknik analisis data dengan tujuan mengelompokkan objek ke dalam cluster yang berbeda berdasarkan kesamaan. Objek-objek yang digabungkan dalam satu *cluster* memiliki kesamaan jarak relatif dengan objek-objek lain di dalam cluster yang sama. Tujuan dari pengelompokan ini adalah agar objek-objek dalam sebuah *cluster* memiliki kemiripan atau hubungan yang erat satu sama lain, sementara berbeda dengan objek-objek yang ada di *cluster* lainnya.
+
+## K-Means *Clustering*
+K-Means *Clustering* adalah salah satu algoritma *clustering* yang paling populer dan banyak digunakan untuk mengelompokkan data ke dalam sejumlah *k* *cluster* berdasarkan kemiripan karakteristiknya. Algoritma ini bekerja dengan mempartisi sekumpulan data ke dalam *k* kelompok, di mana masing-masing data akan dimasukkan ke dalam *cluster* yang memiliki pusat (*centroid*) terdekat. Tujuan utama dari algoritma ini adalah untuk meminimalkan jarak antara data dengan *centroid*-nya sehingga setiap objek dalam *cluster* memiliki kemiripan yang tinggi satu sama lain dan berbeda dengan objek-objek di *cluster* lain.
+
+Secara matematis, K-Means berusaha meminimalkan fungsi objektif yang dikenal sebagai *Within-Cluster Sum of Squares* (WCSS), yang dirumuskan sebagai berikut:
+
+$$
+J = \sum_{i=1}^{k} \sum_{x_j \in C_i} \| x_j - \mu_i \|^2
+$$
+
+di mana $k$ adalah jumlah *cluster*, $C_i$ adalah cluster ke-$i$, $x_j$ adalah data ke-$j$, dan $\mu_i$ adalah *centroid* dari *cluster* ke-$i$. Proses *clustering* dilakukan dengan menghitung jarak antara data dan *centroid* menggunakan jarak Euclidean yang dirumuskan sebagai:
+
+$$
+d(x_j, \mu_i) = \sqrt{\sum_{l=1}^{p} (x_{jl} - \mu_{il})^2}
+$$
+
+di mana $p$ adalah jumlah dimensi data. Setelah data dialokasikan ke cluster terdekat, *centroid* diperbarui dengan menghitung rata-rata dari semua data dalam *cluster* tersebut menggunakan rumus:
+
+$$
+\mu_i = \frac{1}{|C_i|} \sum_{x_j \in C_i} x_j
+$$
+
+Langkah-langkah ini diulang secara iteratif hingga posisi *centroid* tidak lagi berubah secara signifikan atau tercapai konvergensi. 
+
+## Uji Kaiser-Meyer-Olkin (KMO)
+Uji Kaiser-Meyer-Olkin (KMO) merupakan sebuah uji statistik yang digunakan untuk menilai kelayakan data sebelum dilakukan analisis lebih lanjut. Uji KMO mengukur kecukupan sampel dengan menilai seberapa besar variabel-variabel dalam data dapat membentuk pola korelasi parsial yang memadai untuk faktor analisis. Range besaran nilai KMO adalah 0 < nilai KMO < 1. Jika nilai KMO < 0.5, maka tidak dapat ditentukan analisis selanjutnya. Sebaliknya, jika nilai uji KMO menunjukkan sebesar 0.5 sampai 1, maka sampel dikatakan telah representatif atau mewakili populasi (Hair et al., 2010).
+
+## Multikolinearitas
+Multikolinearitas merujuk pada kondisi di mana terdapat hubungan linear yang sangat kuat atau sempurna antara dua atau lebih variabel. Multikolinearitas terjadi ketika beberapa variabel memiliki korelasi linear yang tinggi. Salah satu metode untuk mendeteksi multikolinearitas adalah dengan menghitung *Variance Inflation Factor* (VIF) dengan persamaan:
+
+$$
+{VIF}_i = \frac{1}{1 - R_i^2}
+$$
+Jika nilai $VIF$ lebih dari 10 maka menunjukkan adanya multikolinearitas dan harus ditangani.
+
+
+## *Principal Component Analysis* 
+Analisis komponen utama (*Principal Component Analysis* atau PCA) merupakan metode yang digunakan untuk menyederhanakan data dengan cara mengubah data tersebut secara linier ke dalam sistem koordinat baru yang memuat varians terbesar (Widarjono, 2015). Tujuan utama dari PCA adalah mengurangi jumlah dimensi dalam suatu data tanpa menghilangkan terlalu banyak informasi penting di dalamnya (Rajashree, 2010). Dalam konteks *clustering*, PCA sering digunakan untuk mengurangi multikolinearitas dan mempercepat proses *clustering*.
+
+## Metode *Elbow*
+Metode *Elbow* adalah teknik yang digunakan untuk menentukan jumlah *cluster* yang paling sesuai. Teknik ini dilakukan dengan menganalisis grafik penurunan nilai variasi dalam *cluster* (*within-cluster sum of squares*) terhadap jumlah *cluster*. Jumlah *cluster* optimal ditunjukkan oleh titik yang membentuk sudut tajam menyerupai siku.
+
+## Metode *Silhoutte*
+Menurut Wira et al. (2019), metode *Silhouette Coefficient* merupakan cara untuk menilai seberapa baik data telah dikelompokkan ke dalam *cluster*. Metode ini menggabungkan dua ukuran, yaitu *cohesion* (kedekatan antar data dalam satu *cluster*) dan separation (jarak antar *cluster*). Nilai koefisien yang dihasilkan menunjukkan seberapa jelas batas antar *cluster* serta seberapa rapat data dalam *cluster* tersebut.
+
+## Alur Analisis
+Data yang digunakan merupakan data penjualan kopi dengan variabel kategorik Product dan State, serta sejumlah variabel numerik terkait performa penjualan. Proses metodologi yang dilakukan mencakup beberapa tahapan utama, yaitu:
+
+1. Penggabungan variabel kategorik *Product* dan *State*.
+2. Agregasi data berdasarkan total nilai numerik.
+3. Melakukan standarisasi data untuk menyamakan skala antar variabel.
+4. Melakukan uji asumsi seperti uji korelasi antar variabel serta pengecekan multikolinearitas menggunakan nilai VIF.
+5. Menerapkan *Principal Component Analysis* (PCA)  untuk mereduksi dimensi data dengan tetap mempertahankan informasi utama.
+6.Menentukan jumlah *cluster* optimal menggunakan metode *elbow* dan *silhouette score*.
+7.Melakukan pengelompokan data menggunakan algoritma K-Means Clustering.
+8.Menyajikan visualisasi hasil *cluster* dan memberikan interpretasi terhadap karakteristik masing-masing *cluster*.
+
+# Hasil dan Pembahasan
+
+## *Packages*
+
+*Packages* R menyediakan fungsi-fungsi khusus untuk tugas tertentu, seperti analisis statistik, manipulasi data, visualisasi, dan banyak lagi. Fungsi *library()* dalam R digunakan untuk memuat atau melampirkan sebuah paket (*package*) ke dalam R sehingga fungsi dari paket tersebut bisa digunakan. Berikut ini adalah *packages* yang digunakan untuk analisis. 
+
+```{r load-packages, message=FALSE, warning=FALSE, code_folding = show}
+library(tidyverse)
+library(readxl)
+library(cluster)
+library(factoextra)
+library(FactoMineR)
+library(NbClust)
+library(GGally)
+library(caret)
+library(ggpubr)
+library(broom)
+library(corrplot)
+library(gridExtra)
+library(ggfortify)
+library(DT)
+library(psych)
+library(knitr)
+library(car)
+``` 
+
+## Data *Loading*
+
+*Dataset* yang digunakan adalah  data penjualan dari suatu  *Coffee Chain* yang berisi informasi penjualan berbagai produk kopi dan teh di berbagai negara bagian. Setiap baris merepresentasikan satu catatan penjualan produk tertentu.
+
+```{r load-data}
+data <- read_excel("Coffee Chain Datasets.xlsx")
+
+datatable(
+  data,
+  options = list(pageLength = 5, scrollX = TRUE),
+  caption = "Coffe Chain Dataset"
+)
+```
+
+Selanjutnya akan dilakukan agregasi data dengan variabel State dan Product. Agregasi data adalah proses pengelompokan dan peringkasan data berdasarkan satu atau lebih variabel tertentu, yang kemudian diikuti dengan penerapan fungsi statistik seperti penjumlahan, rata-rata, atau jumlah frekuensi pada kolom-kolom numerik terkait. Dalam konteks ini, agregasi dilakukan dengan cara mengelompokkan data berdasarkan kombinasi negara bagian (State) dan nama produk (Product), kemudian menghitung total dari variabel-variabel numerik seperti COGS (Cost of Goods Sold), Sales, Marketing, Margin, dan Profit. Berikut ini adalah data setelah dilakukan agregasi.
+
+```{r agregasi, message=FALSE, warning=FALSE}
+data <- data %>%
+  mutate(ProductState = paste(Product, State, sep = "_")) %>%
+  group_by(ProductState) %>%
+  summarise(across(c(Sales, Profit, COGS, Margin, Marketing), sum, na.rm = TRUE)) %>%
+  column_to_rownames("ProductState")
+
+datatable(data,
+  options = list(pageLength = 5, scrollX = TRUE),
+  caption = "Data Hasil Agregasi berdasarkan State dan Product"
+)
+```
+
+## *Exploratory Data Analysis*
+
+### Statistik Deskriptif
+
+```{r deskriptif}
+desc_stats <- data %>%
+  summarise(across(
+    c(Sales, Profit, COGS, Margin, Marketing),
+    list(
+      Mean = ~mean(., na.rm = TRUE),
+      SD = ~sd(., na.rm = TRUE),
+      Min = ~min(., na.rm = TRUE),
+      Max = ~max(., na.rm = TRUE),
+      Median = ~median(., na.rm = TRUE)
+    ),
+    .names = "{.col}_{.fn}"
+  )) %>%
+  pivot_longer(everything(), names_to = c("Variable", "Statistic"), names_sep = "_", values_to = "Value") %>%
+  pivot_wider(names_from = Statistic, values_from = Value)
+
+datatable(
+  desc_stats,
+  options = list(pageLength = 7, scrollX = TRUE, searching = FALSE),
+  caption = "Statisik Deskriptif Tiap Variabel",
+)
+```
+Statistik deskriptif dari data menunjukkan bahwa rata-rata penjualan (Sales) berada pada angka sekitar 4.631 dengan variasi yang cukup tinggi, terlihat dari standar deviasi sebesar 3.563 dan nilai maksimum 18.245. Rata-rata Profit sebesar 1.466, namun dengan rentang nilai yang sangat lebar, dari -10.980 hingga 12.489, menunjukkan adanya kombinasi wilayah dan produk yang rugi cukup besar ataupun yang cukup menguntungkan. COGS memiliki rata-rata sekitar 2.026, sedangkan Margin adalah 2.503. Marketing memiliki nilai relatif lebih kecil dibanding variabel lain, dengan rata-rata sebesar 748.
+
+### Korelasi
+```{r corrplot}
+corrplot(
+  cor(data),
+  method = "circle",
+  type = "upper",
+  tl.col = "black",
+  tl.srt = 45,
+  addCoef.col = "black",
+  number.cex = 0.7,
+  title = "Matriks Korelasi Tiap Variabel",
+  mar = c(0, 0, 2, 0)
+)
+```
+
+Berdasarkan *output* matriks korelasi yang ditampilkan pada gambar, dapat disimpulkan bahwa semua variabel memiliki hubungan yang bersifat positif atau searah, yang berarti peningkatan pada satu variabel cenderung diikuti oleh peningkatan pada variabel lainnya. Nilai korelasi berkisar antara 0.22 hingga 0.94, menunjukkan bahwa kekuatan hubungan antar variabel bervariasi dari lemah hingga sangat kuat.
+
+Korelasi tertinggi terlihat antara Sales dan Margin, serta antara Profit dan Margin, masing-masing sebesar 0.94. Ini mengindikasikan bahwa Margin memiliki hubungan yang sangat kuat dengan Sales dan Profit. Artinya, ketika margin meningkat, baik penjualan maupun keuntungan cenderung ikut meningkat. Hubungan kuat lainnya juga terlihat antara Sales dan COGS (0.89) serta antara COGS dan Marketing (0.81), yang menunjukkan bahwa peningkatan biaya pokok penjualan dan anggaran pemasaran juga sering berjalan seiring dengan naiknya angka penjualan. Sebaliknya, korelasi paling rendah terdapat antara Profit dan Marketing (0.22), yang menunjukkan hubungan yang cukup lemah. Hal ini bisa menandakan bahwa peningkatan anggaran pemasaran tidak selalu berhubungan peningkatan keuntungan bersih.
+
+## *Preprocessing* Data
+
+Pada *preprocessing* ini, dilakukan proses standardisasi data menggunakan fungsi scale(). Standardisasi merupakan teknik transformasi data yang bertujuan untuk mengubah nilai-nilai dalam suatu variabel agar memiliki rata-rata nol (0) dan standar deviasi satu (1). Data yang akan distandardisasi adalah data numerik yang telah tersimpan dalam variabel data. Selanjutnya, hasil standarisasi ini akan digunakan untuk membentuk variabel baru yaitu data_scaled. Tabel di bawah menunjukkan data setelah distandardisasi.
+
+```{r preprocessing, message=FALSE, warning=FALSE}
+data_scaled <- scale(data)
+
+datatable(
+  data_scaled,
+  options = list(pageLength = 5, scrollX = TRUE),
+  caption = "Data setelah distandardisasi"
+)
+```
+
+
+## Uji Asumsi
+### Kaiser-Meyer-Olkin (KMO)
+```{r kmo}
+kmo_result <- KMO(cor(data_scaled))
+
+overall_kmo <- kmo_result$MSA
+individual_kmo <- kmo_result$MSAi
+
+kmo_table <- data.frame(
+  Variabel = c("Overall", names(individual_kmo)),
+  MSA = c(overall_kmo, individual_kmo),
+  stringsAsFactors = FALSE
+)
+
+kable(
+  kmo_table, 
+  caption = "Nilai KMO (Measure of Sampling Adequacy)", 
+  digits = 3,
+  col.names = c("Variabel", "MSA"),
+  align = "cc",
+  row.names = FALSE
+)
+
+```
+
+Berdasarkan hasil analisis, diperoleh nilai Kaiser-Meyer-Olkin (KMO) secara keseluruhan sebesar 0,58. Nilai ini lebih besar daripada 0,5, maka dapat disimpulkan bahwa data yang digunakan memenuhi syarat kelayakan dan representatif sehingga dapat dilakukan analisis *cluster*.
+
+```{r vif}
+vif_data <- as.data.frame(data_scaled)
+model <- lm(Sales ~ ., data = vif_data)
+vif_output <- vif(model)
+
+vif_df <- data.frame(Variable = names(vif_output), VIF = as.numeric(vif_output))
+
+kable(
+  vif_df, 
+  caption = "Nilai Variance Inflation Factor (VIF)", 
+  digits = 5,
+  col.names = c("Variabel", "VIF"),
+  align = "cc",
+  row.names = FALSE
+)
+```
+
+Berdasarkan hasil perhitungan Variance Inflation Factor (VIF), diketahui bahwa beberapa variabel memiliki nilai VIF yang sangat tinggi, antara lain Profit sebesar 95,72, Margin sebesar 123,95, dan Marketing sebesar 18,48. Nilai-nilai tersebut jauh melebihi ambang batas umum sebesar 10, yang mengindikasikan adanya multikolinearitas yang kuat antar variabel. Artinya, variabel-variabel tersebut memiliki hubungan linier yang tinggi satu sama lain. Untuk mengatasi permasalahan multikolinearitas ini akan dilakukan  Principal Component Analysis (PCA).
+
+
+## *Principal Component Analysis*
+```{r pca}
+pca_result <- PCA(data_scaled, graph = FALSE)
+
+variance_explained <- pca_result$eig
+variance_df <- data.frame(
+  Component = paste0("PC", 1:nrow(variance_explained)),
+  Eigenvalue = variance_explained[, 1],
+  Variance_Percent = variance_explained[, 2],
+  Cumulative_Variance = variance_explained[, 3]
+)
+
+kable(
+  variance_df,
+  caption = "Variansi yang Dijelaskan",
+  digits = 3,
+  col.names = c("Component", "Eigenvalue", "% Variance", "Cumulative %"),
+  align = "cccc",
+  row.names = FALSE
+)
+
+pca_scores <- pca_result$ind$coord
+
+```
+
+Berdasarkan hasil analisis *Principal Component Analysis* (PCA), dapat dilihat bahwa komponen utama pertama (PC1) memiliki eigenvalue sebesar 3,845 dan menjelaskan 76,90% dari total variansi dalam data. Komponen kedua (PC2) menambahkan penjelasan sebesar 19,76%, sehingga secara kumulatif, dua komponen utama pertama mampu menjelaskan sekitar 96,66% dari keseluruhan variasi data. Sehingga dua komponen utama dapat digunakan.
+
+## Penentuan Jumlah *Cluster*
+### Metode *Elbow*
+```{r elbow}
+fviz_nbclust(data_scaled, kmeans, method = "wss") +
+  geom_vline(xintercept = 3, linetype = "dashed", color = "red") +
+  labs(
+    title = "Metode Elbow",
+    x = "Jumlah CLuster",
+    y = "Within-Cluster Sum of Squares (WCSS)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    plot.caption = element_text(hjust = 0, size = 9)
+  )
+```
+
+Berdasarkan *output* dari metode *elbow* dapat diketahui bahwa jumlah *cluster* yang optimal adalah k=3.
+
+### Metode *Silhouette*
+```{r silhouette}
+fviz_nbclust(data_scaled, kmeans, method = "silhouette") +
+  labs(
+    title = "Metode Silhoutte",
+    x = "Jumlah Cluster",
+    y = "Rata-rata Silhoutte"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    plot.caption = element_text(hjust = 0, size = 9)
+  )
+```
+
+Berdasarkan *output* dari metode *silhoutte* dapat diketahui bahwa jumlah *cluster* yang optimal adalah k=2.
+
+## K-Means *Clustering*
+
+*Clustering* dengan jumlah *cluster* yang berbeda akan dilakukan karena adanya perbedaan hasil *output* dari metode *elbow* dan *silhoutte*. Perbandingan jumlah *cluster* akan dilakukan berdasarkan nilai WCSS untuk menentukan jumlah *cluster* yang paling optimal.
+
+### k = 2
+```{r kmeans-2}
+set.seed(123)
+kmeans_k2 <- kmeans(pca_scores, centers = 2, nstart = 25)
+
+p1 <- fviz_cluster(kmeans_k2, data = pca_scores, geom = "point",
+                   main = "K-means Clustering (k = 2) on PCA Scores") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
+print(p1)
+```
+
+### k = 3
+```{r kmeans-pca}
+kmeans_k3 <- kmeans(pca_scores, centers = 3, nstart = 25)
+p2 <- fviz_cluster(kmeans_k3, data = pca_scores, geom = "point",
+                   main = "K-Means Clustering k=3") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
+print(p2)
+```
+
+### Perbandingan *Cluster*
+```{r wcss}
+wcss_scores <- data.frame(
+  K = c(2, 3),
+  WCSS = c(kmeans_k2$tot.withinss, kmeans_k3$tot.withinss)
+)
+
+kable(
+  wcss_scores,
+  caption = "Perbandingan Nilai WCSS",
+  digits = 2,
+  col.names = c("Jumlah Cluster", "Within-Cluster Sum of Squares (WCSS)"),
+  align = "cc",
+  row.names = FALSE
+)
+```
+
+Hasil perbandingan jumlah *cluster* menunjukkan bahwa ketika data dibagi menjadi 2 *cluster*, nilai Within-Cluster Sum of Squares (WCSS) adalah 388,90, sedangkan pembagian menjadi 3 *cluster* menghasilkan nilai WCSS sebesar 273,34. Penurunan nilai WCSS ini mengindikasikan bahwa pemodelan dengan 3 *cluster* memberikan pemisahan yang lebih baik, karena jarak rata-rata data ke pusat *cluster*nya menjadi lebih kecil, sehingga tiap *cluster* lebih homogen. Dengan demikian akan dipilih jumlah *cluster* sebanyak 3.
+
+## Hasil *Clustering*
+
+Tabel berikut menampilkan hasil dari *clustering* dengan jumlah *cluster* k = 3.
+```{r vis-cluster}
+data_clustered <- data %>%
+  mutate(
+    ProductState = rownames(data),
+    Cluster = as.factor(kmeans_k3$cluster)
+  ) %>%
+  select(ProductState, Sales, Profit, COGS, Margin, Marketing, Cluster)
+
+datatable(
+  data_clustered,
+  options = list(pageLength = 5, scrollX = TRUE),
+  caption = "Hasil Clustering",
+  rownames = FALSE
+)
+```
+
+## Karakteristik *Cluster*
+```{r cluster-summary}
+cluster_summary_k3 <- data_clustered %>%
+  group_by(Cluster) %>%
+  summarise(
+    Count = n(),
+    Sales_Mean = mean(Sales, na.rm = TRUE),
+    Profit_Mean = mean(Profit, na.rm = TRUE),
+    COGS_Mean = mean(COGS, na.rm = TRUE),
+    Margin_Mean = mean(Margin, na.rm = TRUE),
+    Marketing_Mean = mean(Marketing, na.rm = TRUE)
+  )
+
+kable(
+  cluster_summary_k3,
+  caption = "Karakteristik Cluster (Rata-rata)",
+  digits = 2,
+  col.names = c("*Cluster*", "Jumlah", "Sales", "Profit", "COGS", "Margin", "Marketing"),
+  align = "ccccccc",
+  row.names = FALSE
+)
+```
+
+Berdasarkan hasil segmentasi yang diperoleh dari proses clustering, terdapat tiga *cluster* utama yang menunjukkan karakteristik performa bisnis yang berbeda-beda. *Cluster* 1 terdiri dari 18 kombinasi produk dan negara bagian, dan merupakan kelompok dengan performa tertinggi. *Cluster* ini mencatatkan nilai rata-rata tertinggi dalam hampir semua variabel, seperti penjualan (Sales) sebesar 13.704, profit sebesar 6.268, margin sebesar 7.722, dan juga pengeluaran marketing tertinggi sebesar 1.825. Hal ini menunjukkan bahwa *cluster* ini merupakan segmen dengan potensi paling tinggi namun juga membutuhkan investasi yang besar, terutama dalam aspek pemasaran.
+
+*Cluster* 2, dengan jumlah 39, mencerminkan segmen menengah. Rata-rata penjualan berada di angka 6.274, dengan profit 2.474, margin 3.554, dan marketing 1.013. *Cluster* ini menunjukkan performa yang cukup baik dan relatif seimbang antara pendapatan dan biaya, menjadikannya segmen yang potensial untuk pengembangan lebih lanjut.
+
+Sementara itu, *cluster* 3 yang mencakup mayoritas 120 kombinasi merepresentasikan segmen dengan performa terendah. Rata-rata penjualan hanya 2.737, dengan profit yang jauh lebih kecil yakni 418, serta biaya pemasaran paling rendah yaitu 501. Rendahnya nilai-nilai ini menunjukkan bahwa *cluster* ini memiliki tingkat efisiensi dan profitabilitas yang lemah, kemungkinan disebabkan oleh kurangnya investasi pemasaran atau rendahnya permintaan di wilayah tersebut.
+
+# Penutup
+
+## Kesimpulan
+Berdasarkan hasil analisis *clustering* terhadap data penjualan produk kopi berdasarkan kombinasi produk dan wilayah (Product-State), dapat disimpulkan bahwa pendekatan segmentasi efektif untuk mengelompokkan unit bisnis ke dalam kelompok-kelompok homogen. Dengan menggunakan metode K-Means dan didahului oleh *Principal Component Analysis*, diperoleh dua komponen utama yang mampu menjelaskan hingga 96,66% variansi data, yang kemudian digunakan untuk membentuk *cluster* secara efisien. Proses uji asumsi KMO menunjukkan bahwa data memenuhi syarat untuk analisis lanjutan, dengan nilai KMO sebesar 0,58 yang tergolong cukup baik.
+
+Hasil *clustering* menunjukkan data penjualan dan operasional dikelompokkan ke dalam tiga *cluster* utama dengan karakteristik yang berbeda. *Cluster* 1, yang terdiri dari 18 kombinasi produk dan negara bagian, menunjukkan performa tertinggi dengan rata-rata penjualan sebesar 13.704, profit 6.268, margin 7.722, dan pengeluaran pemasaran tertinggi sebesar 1.825. *Cluster* ini mencerminkan kombinasi produk dan wilayah dengan potensi pasar yang kuat, namun membutuhkan investasi pemasaran yang signifikan. *Cluster* 2, dengan 39 kombinasi, merupakan segmen menengah dengan penjualan rata-rata 6.274, profit 2.474, dan pengeluaran pemasaran 1.013, menunjukkan performa yang stabil dengan peluang pengembangan lebih lanjut. *Cluster* 3, yang mencakup 120 kombinasi, memiliki performa terendah dengan penjualan rata-rata 2.737, profit 418, dan pengeluaran pemasaran 501, mengindikasikan efisiensi dan profitabilitas yang lemah, kemungkinan akibat rendahnya permintaan atau strategi pemasaran yang kurang optimal di wilayah tersebut. 
+
+Berdasarkan hasil tersebut, direkomendasikan agar perusahaan menerapkan strategi yang lebih tersegmentasi sesuai dengan karakteristik masing-masing *cluster*. Untuk *cluster* dengan profit tinggi namun biaya besar, dapat dilakukan evaluasi efisiensi biaya seperti pengurangan beban pemasaran atau optimalisasi biaya produksi. Sebaliknya, untuk *cluster* dengan profit rendah namun efisien, perlu dipertimbangkan peningkatan promosi atau diversifikasi produk untuk mendorong pertumbuhan.
+
+
+# Daftar Pustaka
+
+- Rajashree, D. M. (2010). Hybridized K-means clustering approach for high-dimensional data. International Journal of Engineering, Science and Technology, 2(2), 59–66.
+- Widarjono, A. (2015). Analisis multivariat terapan. Yogyakarta: UPP STIM YKPN.
+- Hair, J. F., Black, W. C., Babin, B. J., & Anderson, R. E. (2010). Multivariate data analysis (7th ed.). Pearson Prentice Hall.
+- Wira, B., Budianto, A. E., & Wiguna, A. S. (2019). Implementasi metode K-Medoids clustering untuk mengetahui pola pemilihan program studi mahasiswa baru tahun 2018 di Universitas Kanjuruhan Malang. Rainstek: Jurnal Terapan Sains dan Teknologi, 1(3), 53–68.

@@ -66,4 +66,4 @@ These enhancements ensure the report is visually appealing, easy to navigate, an
 
 ## Project Report
 
-The full analysis report, including interactive visualizations and detailed methodology, is available online: [rpubs.com/solonuansa/segmentasi-produk-kopi](https://rpubs.com/solonuansa/segmentasi-produk-kopi)
+The full analysis report, including interactive visualizations and detailed methodology, is available online: [https://solonuansa.github.io/analisis-segmentasi-produk-kopi](https://solonuansa.github.io/analisis-segmentasi-produk-kopi/)
